@@ -8,140 +8,6 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 
 
-public interface ListInterface<T> {
-
-    /*
-     * Name        : size
-     * Parameter   : void
-     * return      : int
-     * Description : return # of nodes
-     */
-    public int size();
-
-    /*
-     * Name        : isEmpty
-     * Parameter   : void
-     * return      : boolean
-     * Description : check weather tree is empty or not
-     */
-    public boolean isEmpty();
-
-    /*
-     * Name        : push_back
-     * Parameter   : data : T
-     * return      : null
-     * Description : 재활용 가능한 노드가 있으면 사용하고 없으면 새로운 노드를 만들어 리스트 맨 뒤에 연결
-     */
-    public void push_back(T data);
-
-    /*
-     * Name        : push_front
-     * Parameter   : data : T
-     * return      : null
-     * Description : 재활용 가능한 노드가 있다면 사용하고, 없다면 새로운 노드를 만들어 맨 앞에 연결.
-     */
-    public void push_front(T data);
-
-
-    /*
-     * Name        : insert
-     * Parameter   : idx : int, data : T
-     * return      : null
-     * Description : 지정된 위치에 data 삽입. 위치가 리스트의 크기보다 크거나 빈 리스트인경우 맨 뒤에 연결.
-     */
-    public void insert(int idx, T data);
-
-    /*
-     * Name        : remove_front
-     * Parameter   : void
-     * return      : null
-     * Description : 맨 앞의 노드를 삭제(재활용 리스트에 연결). 빈 리스트면 삭제를 수행하지 않고 종료한다.
-     */
-    public void remove_front();
-
-    /*
-     * Name        : remove_tail
-     * Parameter   : void
-     * return      : null
-     * Description : 맨 뒤의 노드를 삭제(재활용 리스트에 연결). 빈 리스트면 삭제를 수행하지 않고 종료한다.
-     */
-    public void remove_tail();
-
-    /*
-     * Name        : removeByIndex
-     * Parameter   : idx : int
-     * return      : null
-     * Description : 입력된 인덱스 위치에 있는 노드를 삭제(재활용 리스트에 연결). 인덱스가 범위를 벗어나거나 빈 리스트면 삭제를 수행하지 않고 종료.
-     */
-    public void removeByIndex(int idx);
-
-
-    /*
-     * Name        : removeByData
-     * Parameter   : data : T
-     * return      : null
-     * Description : 입력된 데이터를 탐색하면서 발견하면 해당 노드 삭제(재활용 리스트에 연결). 데이터가 없으면 종료.
-     */
-    public void removeByData(T data);
-
-
-    /*
-     * Name        : removeAll
-     * Parameter   : void
-     * return      : null
-     * Description : 모든 노드를 삭제한다(재활용 리스트에 연결)
-     */
-    public void removeAll();
-
-
-    /*
-     * Name        : search
-     * Parameter   : data : T
-     * return      : null
-     * Description : 입력된 데이터를 리스트에서 검색한다. 빈 리스트라면 검색을 수행하지 않고 종료한다.
-     */
-    public int search(T data);
-
-
-    // Runtime 도중에 Generic Type인 T 를 찾을방법은..메인에서 클래스 타입을 넘겨주는 방법..
-    // 다른 방법 찾아보기
-    public void sort(Class<T> clazz);
-
-
-    /*
-     * Name        : printList
-     * Parameter   : void
-     * return      : null
-     * Description : 리스트를 출력한다.
-     */
-    public void printList() throws IOException;
-
-}
-
-
-/*
- * Class       : Node<T extends Comparable<T>>
- * Description : Node for LinkedList.
- * Member      : data : T        - data
- *             : next : Node<T>  - next node pointer
- */
-public class Node<T> {
-
-    public T data;
-    public Node<T> next;
-
-    // Constructor
-    public Node(T _data) {
-        data = _data;
-        next = null;
-    }
-
-    public Node(T _data, Node<T> _next) {
-        data = _data;
-        next = _next;
-    }
-}
-
 public class AvailableList<T> {
 
     // Member of LinkedList<T extends Comparable<T>>
@@ -219,7 +85,6 @@ public class AvailableList<T> {
         return avHeader != null;
     }
 }
-
 
 /*
 * Class       : LinkedList<T extends Comparable<T>>
@@ -411,7 +276,7 @@ public class LinkedList <T extends Comparable<T>> implements ListInterface<T> {
         Node<T> preNode = header;
         Node<T> curNode = preNode;
 
-        for(; curNode != null && curNode.data != data ; idx++, preNode = curNode, curNode = curNode.next);
+        for(; curNode.data != data && curNode != null ; idx++, preNode = curNode, curNode = curNode.next);
 
         if(curNode == null) return -1;
         else return idx;
@@ -462,6 +327,220 @@ public class LinkedList <T extends Comparable<T>> implements ListInterface<T> {
     }
 }
 
+public interface ListInterface<T> {
+
+    /*
+     * Name        : size
+     * Parameter   : void
+     * return      : int
+     * Description : return # of nodes
+     */
+    public int size();
+
+    /*
+     * Name        : isEmpty
+     * Parameter   : void
+     * return      : boolean
+     * Description : check weather tree is empty or not
+     */
+    public boolean isEmpty();
+
+    /*
+     * Name        : push_back
+     * Parameter   : data : T
+     * return      : null
+     * Description : 재활용 가능한 노드가 있으면 사용하고 없으면 새로운 노드를 만들어 리스트 맨 뒤에 연결
+     */
+    public void push_back(T data);
+
+    /*
+     * Name        : push_front
+     * Parameter   : data : T
+     * return      : null
+     * Description : 재활용 가능한 노드가 있다면 사용하고, 없다면 새로운 노드를 만들어 맨 앞에 연결.
+     */
+    public void push_front(T data);
 
 
+    /*
+     * Name        : insert
+     * Parameter   : idx : int, data : T
+     * return      : null
+     * Description : 지정된 위치에 data 삽입. 위치가 리스트의 크기보다 크거나 빈 리스트인경우 맨 뒤에 연결.
+     */
+    public void insert(int idx, T data);
 
+    /*
+     * Name        : remove_front
+     * Parameter   : void
+     * return      : null
+     * Description : 맨 앞의 노드를 삭제(재활용 리스트에 연결). 빈 리스트면 삭제를 수행하지 않고 종료한다.
+     */
+    public void remove_front();
+
+    /*
+     * Name        : remove_tail
+     * Parameter   : void
+     * return      : null
+     * Description : 맨 뒤의 노드를 삭제(재활용 리스트에 연결). 빈 리스트면 삭제를 수행하지 않고 종료한다.
+     */
+    public void remove_tail();
+
+    /*
+     * Name        : removeByIndex
+     * Parameter   : idx : int
+     * return      : null
+     * Description : 입력된 인덱스 위치에 있는 노드를 삭제(재활용 리스트에 연결). 인덱스가 범위를 벗어나거나 빈 리스트면 삭제를 수행하지 않고 종료.
+     */
+    public void removeByIndex(int idx);
+
+
+    /*
+     * Name        : removeByData
+     * Parameter   : data : T
+     * return      : null
+     * Description : 입력된 데이터를 탐색하면서 발견하면 해당 노드 삭제(재활용 리스트에 연결). 데이터가 없으면 종료.
+     */
+    public void removeByData(T data);
+
+
+    /*
+     * Name        : removeAll
+     * Parameter   : void
+     * return      : null
+     * Description : 모든 노드를 삭제한다(재활용 리스트에 연결)
+     */
+    public void removeAll();
+
+
+    /*
+     * Name        : search
+     * Parameter   : data : T
+     * return      : null
+     * Description : 입력된 데이터를 리스트에서 검색한다. 빈 리스트라면 검색을 수행하지 않고 종료한다.
+     */
+    public int search(T data);
+
+
+    // Runtime 도중에 Generic Type인 T 를 찾을방법은..메인에서 클래스 타입을 넘겨주는 방법..
+    // 다른 방법 찾아보기
+    public void sort(Class<T> clazz);
+
+
+    /*
+     * Name        : printList
+     * Parameter   : void
+     * return      : null
+     * Description : 리스트를 출력한다.
+     */
+    public void printList() throws IOException;
+
+    public T tail();
+
+    public T front();
+
+}
+
+/*
+ * Class       : Node<T extends Comparable<T>>
+ * Description : Node for LinkedList.
+ * Member      : data : T        - data
+ *             : next : Node<T>  - next node pointer
+ */
+
+public class Node<T> {
+
+    public T data;
+    public Node<T> next;
+
+    // Constructor
+    public Node(T _data) {
+        data = _data;
+        next = null;
+    }
+
+    public Node(T _data, Node<T> _next) {
+        data = _data;
+        next = _next;
+    }
+}
+
+public class QueueEmptyException extends Exception {
+
+    public QueueEmptyException() {
+        super("QueueEmptyException");
+    }
+
+    public QueueEmptyException(String msg) {
+        super(msg);
+    }
+}
+
+package SortingAlgorithm;
+
+public class Queue<T extends Comparable<T>> {
+
+    LinkedList<T> queue;
+    private int size;
+
+    public Queue() {
+        queue = new LinkedList<>();
+        size = -1;
+    }
+
+    public boolean empty() {
+        return size == -1;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    public boolean add(T data) {
+
+        if(data == null) return false;
+
+        queue.push_back(data);
+        size++;
+
+        return true;
+    }
+
+    public T element() throws QueueEmptyException {
+
+        if(empty()) throw new QueueEmptyException();
+
+        return queue.front();
+    }
+
+    public T peek() {
+        return (empty()) ? null : queue.front();
+    }
+
+    public T poll() {
+
+        if(empty()) return null;
+
+        T returnVal = queue.front();
+
+        queue.remove_front();
+
+        size--;
+
+        return returnVal;
+    }
+
+
+    public T remove() throws QueueEmptyException{
+
+        if(empty()) throw new QueueEmptyException();
+
+        T returnVal = queue.front();
+
+        queue.remove_front();
+
+        size--;
+
+        return returnVal;
+    }
+}

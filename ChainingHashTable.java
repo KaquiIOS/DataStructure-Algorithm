@@ -1,12 +1,11 @@
-package SortingAlgorithm;
 
+package SortingAlgorithm;
 
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.util.Arrays;
-
 
 public interface ListInterface<T> {
 
@@ -100,7 +99,7 @@ public interface ListInterface<T> {
      * return      : null
      * Description : 입력된 데이터를 리스트에서 검색한다. 빈 리스트라면 검색을 수행하지 않고 종료한다.
      */
-    public boolean search(T data);
+    public int search(T data);
 
 
     // Runtime 도중에 Generic Type인 T 를 찾을방법은..메인에서 클래스 타입을 넘겨주는 방법..
@@ -116,31 +115,12 @@ public interface ListInterface<T> {
      */
     public void printList() throws IOException;
 
+    public T tail();
+
+    public T front();
+
 }
 
-
-/*
- * Class       : Node<T extends Comparable<T>>
- * Description : Node for LinkedList.
- * Member      : data : T        - data
- *             : next : Node<T>  - next node pointer
- */
-public class Node<T> {
-
-    public T data;
-    public Node<T> next;
-
-    // Constructor
-    public Node(T _data) {
-        data = _data;
-        next = null;
-    }
-
-    public Node(T _data, Node<T> _next) {
-        data = _data;
-        next = _next;
-    }
-}
 
 public class AvailableList<T> {
 
@@ -220,7 +200,18 @@ public class AvailableList<T> {
     }
 }
 
-public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
+
+/*
+* Class       : LinkedList<T extends Comparable<T>>
+* Description : 기본적인 링크드 리스트이다. Available List 를 사용하여 노드 재활용.
+* Member      : avHeader : Node<T> - Available List header for adding or popping removedNode
+*               avTail   : Node<T> - Available List tail for removeAll
+*               header   : Node<T> - list header
+*               tail     : Note<T> - list tail
+*               size     : int     - List Size
+*/
+
+public class LinkedList <T extends Comparable<T>> implements ListInterface<T> {
 
     private Node<T> header;
     private Node<T> tail;
@@ -228,16 +219,16 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
 
     private AvailableList<T> avList;
 
-    public CircularList() {
-        header = tail = null;
+    // Constructor
+    public LinkedList() {
         avList = new AvailableList<>();
+        header = tail = null;
         size = -1;
     }
 
-    public CircularList(T data) {
+    public LinkedList(T data) {
         avList = new AvailableList<>();
         header = tail = new Node<>(data);
-        tail.next = header;
         size = 1;
     }
 
@@ -247,28 +238,31 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
     }
 
     @Override
-    public boolean isEmpty() {
+    public boolean isEmpty(){
         return header == null;
     }
 
+
     private void makeList(T data, Node<T> recycleNode) {
         header = tail = (recycleNode == null) ? new Node<>(data) : recycleNode;
-        tail.next = header;
         size = 1;
     }
 
     @Override
     public void push_back(T data) {
 
-        Node<T> recycleNode = avList.getAvailableNode(data, header);
+        Node<T> recycleNode = avList.getAvailableNode(data, null);
 
-        if (isEmpty()) {
+        recycleNode = (recycleNode == null) ? new Node<>(data) : recycleNode;
+
+        if(isEmpty()) {
             makeList(data, recycleNode);
             return;
         }
-        tail.next = (recycleNode == null) ? new Node<>(data, header) : recycleNode;
-        tail = tail.next;
-
+        else {
+            tail.next = recycleNode;
+            tail = tail.next;
+        }
 
         size++;
     }
@@ -278,12 +272,10 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
 
         Node<T> recycleNode = avList.getAvailableNode(data, header);
 
-        if (isEmpty()) {
+        if(isEmpty())
             makeList(data, recycleNode);
-        } else {
-            header = recycleNode;
-            tail.next = header;
-        }
+        else
+            header = (recycleNode == null) ? new Node<>(data, header) : recycleNode;
 
         size++;
     }
@@ -291,19 +283,17 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
     @Override
     public void insert(int idx, T data) {
 
-        if (isEmpty() || size <= idx) {
+        if(isEmpty() || size <= idx) {
             push_back(data);
         } else {
-
             Node<T> preNode = header;
             Node<T> curNode = preNode;
 
-            for (int i = 0; i < idx; ++i, preNode = curNode, curNode = curNode.next) ;
+            for(int i = 0; i < idx; ++i, preNode = curNode, curNode = curNode.next);
 
             Node<T> recycleNode = avList.getAvailableNode(data, curNode);
 
             preNode.next = (recycleNode == null) ? new Node<>(data, curNode) : recycleNode;
-
         }
 
         size++;
@@ -312,11 +302,10 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
     @Override
     public void remove_front() {
 
-        if (isEmpty()) return;
+        if(isEmpty()) return;
 
         Node<T> removedNode = header;
-
-        header = tail.next = header.next;
+        header = header.next;
 
         avList.addRemovedNode(removedNode);
 
@@ -326,35 +315,38 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
     @Override
     public void remove_tail() {
 
-        if (isEmpty()) return;
+        if(isEmpty()) return;
 
         Node<T> removedNode = tail;
-        Node<T> preNode = header;
 
-        for (; preNode.next != tail; preNode = preNode.next) ;
+        Node<T> preNode = header;
+        Node<T> curNode = preNode;
+
+        for(; curNode != tail; preNode = curNode, curNode = curNode.next);
 
         tail = preNode;
-        tail.next = header;
+        tail.next = null;
 
         avList.addRemovedNode(removedNode);
+
         size--;
     }
 
     @Override
     public void removeByIndex(int idx) {
 
-        if (isEmpty() || size <= idx) return;
-        else if (size == idx - 1) {
+        if(isEmpty() || size <= idx) return;
+        else if(size == idx - 1) {
             remove_tail();
             return;
         }
 
         Node<T> preNode = header;
+        Node<T> curNode = preNode;
 
-        for (int i = 0; i < idx - 1; ++i, preNode = preNode.next) ;
+        for(int i = 0; i < idx; ++i, preNode = curNode, curNode = curNode.next);
 
-        Node<T> removedNode = preNode.next;
-
+        Node<T> removedNode = curNode;
         preNode.next = removedNode.next;
 
         avList.addRemovedNode(removedNode);
@@ -365,21 +357,17 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
     @Override
     public void removeByData(T data) {
 
-        if (isEmpty() || tail.data == data) {
-            remove_tail();
-            return;
-        }
+        if(isEmpty()) return;
 
         Node<T> preNode = header;
         Node<T> curNode = preNode;
 
-        for (; curNode != tail && curNode.data != data; preNode = curNode, curNode = curNode.next) ;
+        for(; curNode != null && curNode.data != data ; preNode = curNode, curNode = curNode.next);
 
-        if (curNode == tail) return;
+        if(curNode == null) return;
 
         Node<T> removedNode = curNode;
-
-        preNode.next = removedNode.next;
+        preNode.next = curNode.next;
 
         avList.addRemovedNode(removedNode);
 
@@ -388,61 +376,121 @@ public class CircularList<T extends Comparable<T>> implements ListInterface<T> {
 
     @Override
     public void removeAll() {
-
         avList.addRemovedNodes(header, tail);
         header = tail = null;
-        size = 0;
+        size = -1;
     }
 
     @Override
-    public boolean search(T data) {
+    public int search(T data) {
 
-        if (isEmpty()) return false;
-        else if (tail.data == data) return true;
+        if(isEmpty()) return -1;
 
-        Node<T> curNode = header;
+        int idx = 0;
 
-        for (; curNode.data != data && curNode.next != tail; curNode = curNode.next) ;
+        Node<T> preNode = header;
+        Node<T> curNode = preNode;
 
-        return curNode != tail;
+        for(; curNode.data != data && curNode != null ; idx++, preNode = curNode, curNode = curNode.next);
+
+        if(curNode == null) return -1;
+        else return idx;
     }
 
     @Override
     public void sort(Class<T> clazz) {
 
-        if (isEmpty()) return;
+        //T[] arr = (T[])(new Object[size]);
+        T[] arr = (T[])Array.newInstance(clazz, size);
 
-        T[] arr = (T[]) Array.newInstance(clazz, size);
+        Node<T> node = header;
 
-        Node<T> curNode = header;
-
-        for (int i = 0; i < size - 1 && curNode != tail; ++i, curNode = curNode.next)
-            arr[i] = curNode.data;
-
-        arr[size - 1] = tail.data;
+        for(int i = 0; node != null; node = node.next, ++i)
+            arr[i] = node.data;
 
         Arrays.sort(arr);
 
-        curNode = header;
+        node = header;
 
-        for (int i = 0; i < size; ++i, curNode = curNode.next)
-            curNode.data = arr[i];
+        for(int i = 0; node != null; node = node.next, ++i)
+            node.data = arr[i];
     }
 
     @Override
     public void printList() throws IOException {
 
-        if (isEmpty()) return;
+        if(isEmpty()) return;
 
         Node<T> startNode = header;
 
         OutputStream out = new BufferedOutputStream(System.out);
 
-        for (; startNode != tail; startNode = startNode.next)
-            out.write((startNode.data.toString() + "\n").getBytes());
-
-        out.write((tail.data + "\n").getBytes());
+        for(; startNode != null; startNode = startNode.next)
+            out.write((startNode.data.toString() + " ").getBytes());
 
         out.flush();
+    }
+
+    @Override
+    public T tail() {
+        return tail.data;
+    }
+
+    @Override
+    public T front() {
+        return header.data;
+    }
+}
+
+
+public class ChainingHash {
+
+    private LinkedList<Integer>[] chainingHash;
+    private int sizeOfTable;
+    private int numOfElement;
+
+    public ChainingHash(int _sizeOfTable) {
+
+        sizeOfTable = _sizeOfTable;
+        chainingHash = new LinkedList[sizeOfTable];
+        numOfElement = 0;
+
+        for(int i = 0; i <sizeOfTable; ++i)
+            chainingHash[i] = new LinkedList<>();
+    }
+
+    public void add(Integer data) {
+
+        int repository = doubleHash(data);
+
+        chainingHash[repository].push_back(data);
+
+        numOfElement++;
+    }
+
+    public void delete(Integer data) {
+
+        int repository = doubleHash(data);
+
+        chainingHash[repository].removeByData(data);
+
+        numOfElement--;
+    }
+
+    private int modHash(Integer data) {
+        return data % sizeOfTable;
+    }
+
+    private int doubleHash(Integer data) {
+        return ((modHash(data) + 1 + (data % (sizeOfTable - ((sizeOfTable % 2 == 0) ? 1: 2)))) % sizeOfTable);
+    }
+
+    public void printChain() throws IOException {
+
+        for(int i = 0; i < sizeOfTable; ++i) {
+            System.out.print("\n" + i + " : ");
+            chainingHash[i].printList();
+        }
+        System.out.println();
     }
 }

@@ -427,7 +427,7 @@ public class BidirectionalList<T extends Comparable<T>> implements ListInterface
         BidirectionalNode<T> preNode = header;
         BidirectionalNode<T> curNode = preNode;
 
-        for(; curNode.data != data && curNode != tail; preNode = curNode, curNode = curNode.right);
+        for(;  curNode != tail && curNode.data != data; preNode = curNode, curNode = curNode.right);
 
         if(curNode == tail) return;
 

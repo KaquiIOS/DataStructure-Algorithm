@@ -8,6 +8,109 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 
 
+/*
+ * Class       : Node<T extends Comparable<T>>
+ * Description : Node for LinkedList.
+ * Member      : data : T        - data
+ *             : next : Node<T>  - next node pointer
+ */
+
+public class Node<T> {
+
+    public T data;
+    public Node<T> next;
+
+    // Constructor
+    public Node(T _data) {
+        data = _data;
+        next = null;
+    }
+
+    public Node(T _data, Node<T> _next) {
+        data = _data;
+        next = _next;
+    }
+}
+
+
+public class AvailableList<T> {
+
+    // Member of LinkedList<T extends Comparable<T>>
+    private Node<T> avHeader;
+    private Node<T> avTail;
+
+    public AvailableList() {
+        avHeader = avTail = null;
+    }
+
+    /*
+     * Name        : getAvailableNode
+     * Parameter   : data : T, next : Node<T>
+     * return      : Node<T>
+     * Description : if there are available nodes, return front node after applying parameter. 재활용이 가능한 노드가 있을 때, 노드의 값을 매개벼수의 값으로 변경한 후 반환
+     */
+    public Node<T> getAvailableNode(T data, Node<T> next) {
+
+        if(!isExistAvailableNode()) return null;
+
+        Node<T> recycleNode = avHeader;
+
+        avHeader = avHeader.next;
+
+        recycleNode.next = next;
+        recycleNode.data = data;
+
+        return recycleNode;
+    }
+
+    /*
+     * Name        : addRemoveNode
+     * Parameter   : removedNode : Node<T>
+     * return      : null
+     * Description : add removed node to available list
+     */
+    public void addRemovedNode(Node<T> removedNode) {
+
+        if(removedNode == null) return;
+
+        removedNode.next = null;
+
+        if(avHeader == null) avHeader = avTail = removedNode;
+
+        else {
+            removedNode.next = avHeader;
+            avHeader = removedNode;
+        }
+    }
+
+    /*
+     * Name        : addRemovedNodes
+     * Parameter   : removedNodes : Node<T>, tail : Node<T>
+     * return      : null
+     * Description : 리스트 자체를 삭제할 때 available list 의 tail에 붙여넣는다.
+     */
+    public void addRemovedNodes(Node<T> headerNode, Node<T> tail) {
+
+        if(avHeader == null) {
+            avHeader = headerNode;
+            avTail = tail;
+        } else {
+            avTail.next = headerNode;
+            avTail = tail;
+        }
+    }
+
+    /*
+     * Name        : isExistAvailableNode
+     * Parameter   : void
+     * return      : boolean
+     * Description : 재활용 가능한 노드가 있으면 true, 없으면 false 반환
+     */
+    private boolean isExistAvailableNode() {
+        return avHeader != null;
+    }
+}
+
 public interface ListInterface<T> {
 
     /*
@@ -116,110 +219,11 @@ public interface ListInterface<T> {
      */
     public void printList() throws IOException;
 
+    public T tail();
+
+    public T front();
+
 }
-
-
-/*
- * Class       : Node<T extends Comparable<T>>
- * Description : Node for LinkedList.
- * Member      : data : T        - data
- *             : next : Node<T>  - next node pointer
- */
-public class Node<T> {
-
-    public T data;
-    public Node<T> next;
-
-    // Constructor
-    public Node(T _data) {
-        data = _data;
-        next = null;
-    }
-
-    public Node(T _data, Node<T> _next) {
-        data = _data;
-        next = _next;
-    }
-}
-
-public class AvailableList<T> {
-
-    // Member of LinkedList<T extends Comparable<T>>
-    private Node<T> avHeader;
-    private Node<T> avTail;
-
-    public AvailableList() {
-        avHeader = avTail = null;
-    }
-
-    /*
-     * Name        : getAvailableNode
-     * Parameter   : data : T, next : Node<T>
-     * return      : Node<T>
-     * Description : if there are available nodes, return front node after applying parameter. 재활용이 가능한 노드가 있을 때, 노드의 값을 매개벼수의 값으로 변경한 후 반환
-     */
-    public Node<T> getAvailableNode(T data, Node<T> next) {
-
-        if(!isExistAvailableNode()) return null;
-
-        Node<T> recycleNode = avHeader;
-
-        avHeader = avHeader.next;
-
-        recycleNode.next = next;
-        recycleNode.data = data;
-
-        return recycleNode;
-    }
-
-    /*
-     * Name        : addRemoveNode
-     * Parameter   : removedNode : Node<T>
-     * return      : null
-     * Description : add removed node to available list
-     */
-    public void addRemovedNode(Node<T> removedNode) {
-
-        if(removedNode == null) return;
-
-        removedNode.next = null;
-
-        if(avHeader == null) avHeader = avTail = removedNode;
-
-        else {
-            removedNode.next = avHeader;
-            avHeader = removedNode;
-        }
-    }
-
-    /*
-     * Name        : addRemovedNodes
-     * Parameter   : removedNodes : Node<T>, tail : Node<T>
-     * return      : null
-     * Description : 리스트 자체를 삭제할 때 available list 의 tail에 붙여넣는다.
-     */
-    public void addRemovedNodes(Node<T> headerNode, Node<T> tail) {
-
-        if(avHeader == null) {
-            avHeader = headerNode;
-            avTail = tail;
-        } else {
-            avTail.next = headerNode;
-            avTail = tail;
-        }
-    }
-
-    /*
-     * Name        : isExistAvailableNode
-     * Parameter   : void
-     * return      : boolean
-     * Description : 재활용 가능한 노드가 있으면 true, 없으면 false 반환
-     */
-    private boolean isExistAvailableNode() {
-        return avHeader != null;
-    }
-}
-
 
 /*
 * Class       : LinkedList<T extends Comparable<T>>
@@ -411,7 +415,7 @@ public class LinkedList <T extends Comparable<T>> implements ListInterface<T> {
         Node<T> preNode = header;
         Node<T> curNode = preNode;
 
-        for(; curNode != null && curNode.data != data ; idx++, preNode = curNode, curNode = curNode.next);
+        for(; curNode.data != data && curNode != null ; idx++, preNode = curNode, curNode = curNode.next);
 
         if(curNode == null) return -1;
         else return idx;
@@ -462,6 +466,81 @@ public class LinkedList <T extends Comparable<T>> implements ListInterface<T> {
     }
 }
 
+public class StackEmptyException extends Exception {
+
+    public StackEmptyException() {
+        super("StackEmptyException");
+    }
+
+    public StackEmptyException(String msg) {
+        super(msg);
+    }
+}
 
 
+public class StackSearchException extends Exception {
+
+    public StackSearchException() {
+        super("StackSearchException");
+    }
+
+    public StackSearchException(String msg) {
+        super(msg);
+    }
+}
+
+package SortingAlgorithm;
+
+public class Stack<T extends Comparable<T>> {
+
+    private LinkedList<T> stack;
+    private int size;
+
+    public Stack() {
+        stack = new LinkedList<>();
+        size = -1;
+    }
+
+    public boolean empty() {
+        return size == -1;
+    }
+
+    public T peek() throws StackEmptyException{
+        if(empty()) throw new StackEmptyException();
+
+        return stack.tail();
+    }
+
+    public T pop() throws StackEmptyException{
+
+        if(empty()) throw new StackEmptyException();
+
+        T returnData = stack.tail();
+
+        stack.remove_tail();
+
+        size--;
+
+        return returnData;
+    }
+
+    public T push(T data) {
+
+        stack.push_back(data);
+
+        size++;
+
+        return data;
+    }
+
+    public int search(T data) throws StackSearchException{
+
+        int findPos = stack.search(data);
+
+        if(findPos == -1) throw new StackSearchException();
+
+        return findPos;
+    }
+
+}
 
